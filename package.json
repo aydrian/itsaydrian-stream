@@ -9,9 +9,12 @@
     "export": "next export"
   },
   "dependencies": {
+    "@trycourier/courier": "^2.1.0",
     "micro": "^9.3.4",
     "next": "10.0.9",
     "react": "17.0.1",
-    "react-dom": "17.0.1"
+    "react-dom": "17.0.1",
+    "twitch": "^4.5.3",
+    "twitch-auth": "^4.5.3"
   }
 }

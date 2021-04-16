@@ -41,9 +41,34 @@ const handler = async (req, res) => {
         ex
       );
     }
+  } else if (type === "channel.follow") {
+    try {
+      await sendFollow(event);
+    } catch (ex) {
+      console.log(
+        `An error occurred sending the Follow notification for ${event.broadcaster_user_name}: `,
+        ex
+      );
+    }
   }
 
   res.status(200).end();
+};
+
+const sendFollow = async (event) => {
+  const { messageId } = await courier.send({
+    eventId: "TWITCH_ITSAYDRIAN_FOLLOWER",
+    recipientId: "ITSAYDRIAN_STREAM_OVERLAY",
+    profile: {
+      courier: {
+        channel: "ITSAYDRIAN_STREAM_OVERLAY"
+      }
+    },
+    data: event
+  });
+  console.log(
+    `Follow notification for ${event.broadcaster_user_name} sent. Message ID: ${messageId}.`
+  );
 };
 
 const sendOnline = async (event) => {
@@ -60,7 +85,7 @@ const sendOnline = async (event) => {
 };
 
 const getStreamData = async (userId) => {
-  const stream = await twitchClient.helix.streams.getStreamByUserId(userId);
+  const stream = await twitch.helix.streams.getStreamByUserId(userId);
   if (!stream) {
     console.log(`No current stream for ${userId}.`);
     return {};

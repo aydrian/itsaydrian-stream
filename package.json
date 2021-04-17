@@ -12,7 +12,6 @@
     "@trycourier/courier": "^2.1.0",
     "@trycourier/react-provider": "*",
     "@trycourier/react-toast": "*",
-    "micro": "^9.3.4",
     "next": "10.0.9",
     "react": "17.0.1",
     "react-dom": "17.0.1",

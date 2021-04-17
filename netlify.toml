@@ -1,3 +1,11 @@
 [build]
   command = "npm run build"
   publish = "out"
+
+[[redirects]]
+  from = "/webhooks/twitch"
+  to = "/.netlify/functions/twitch"
+  status = 200
+
+[functions]
+  node_bundler = "esbuild"

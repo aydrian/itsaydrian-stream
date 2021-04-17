@@ -1,33 +1,31 @@
 import crypto from "crypto";
-import { buffer } from "micro";
 const twitchSigningSecret = process.env.TWITCH_SIGNING_SECRET;
 
 const withVerifyTwitch = (handler) => {
-  return async (req, res) => {
-    const messageId = req.headers["twitch-eventsub-message-id"];
-    const timestamp = req.headers["twitch-eventsub-message-timestamp"];
-    const messageSignature = req.headers["twitch-eventsub-message-signature"];
+  return async (event, context) => {
+    const messageId = event.headers["twitch-eventsub-message-id"];
+    const timestamp = event.headers["twitch-eventsub-message-timestamp"];
+    const messageSignature = event.headers["twitch-eventsub-message-signature"];
     const time = Math.floor(new Date().getTime() / 1000);
+
+    if (!twitchSigningSecret) {
+      console.log(`Twitch signing secret is empty.`);
+      return { statusCode: 422, body: "Signature verification failed." };
+    }
 
     if (Math.abs(time - timestamp) > 600) {
       // needs to be < 10 minutes
       console.log(
         `Verification Failed: timestamp > 10 minutes. Message Id: ${messageId}.`
       );
-      throw new Error("Ignore this request.");
+      return { statusCode: 422, body: "Ignore this request." };
     }
 
-    if (!twitchSigningSecret) {
-      console.log(`Twitch signing secret is empty.`);
-      res.status(422).send("Signature verification failed.");
-    }
-
-    const buf = await buffer(req);
     const computedSignature =
       "sha256=" +
       crypto
         .createHmac("sha256", twitchSigningSecret)
-        .update(messageId + timestamp + buf)
+        .update(messageId + timestamp + event.body)
         .digest("hex");
 
     if (messageSignature !== computedSignature) {
@@ -36,10 +34,10 @@ const withVerifyTwitch = (handler) => {
       console.log(
         `Message ${messageId} Computed Signature: ${computedSignature}`
       );
-      return res.status(422).send("Signature verification failed.");
+      return { statusCode: 422, body: "Signature verification failed." };
     }
 
-    return handler(req, res);
+    return handler(event, context);
   };
 };
 

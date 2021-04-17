@@ -1,8 +1,6 @@
-const { json } = require("micro");
 import { CourierClient } from "@trycourier/courier";
 import { ApiClient } from "twitch";
 import { ClientCredentialsAuthProvider } from "twitch-auth";
-import withVerifyTwitch from "../../../middleware/withVerifyTwitch";
 
 const courier = CourierClient();
 const authProvider = new ClientCredentialsAuthProvider(
@@ -11,51 +9,7 @@ const authProvider = new ClientCredentialsAuthProvider(
 );
 const twitch = new ApiClient({ authProvider });
 
-const handler = async (req, res) => {
-  if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
-    return res.status(405).end("Method Not Allowed");
-  }
-
-  const body = await json(req);
-  const messageType = req.headers["twitch-eventsub-message-type"];
-  if (messageType === "webhook_callback_verification") {
-    console.log("Verifying Webhook");
-    return res.status(200).send(body.challenge);
-  }
-
-  const { type } = body.subscription;
-  const { event } = body;
-
-  console.log(
-    `Receiving ${type} request for ${event.broadcaster_user_name}: `,
-    event
-  );
-
-  if (type === "stream.online") {
-    try {
-      await sendOnline(event);
-    } catch (ex) {
-      console.log(
-        `An error occurred sending the Online notification for ${event.broadcaster_user_name}: `,
-        ex
-      );
-    }
-  } else if (type === "channel.follow") {
-    try {
-      await sendFollow(event);
-    } catch (ex) {
-      console.log(
-        `An error occurred sending the Follow notification for ${event.broadcaster_user_name}: `,
-        ex
-      );
-    }
-  }
-
-  res.status(200).end();
-};
-
-const sendFollow = async (event) => {
+export async function sendFollow(event) {
   const { messageId } = await courier.send({
     eventId: "TWITCH_ITSAYDRIAN_FOLLOWER",
     recipientId: "ITSAYDRIAN_STREAM_OVERLAY",
@@ -69,9 +23,9 @@ const sendFollow = async (event) => {
   console.log(
     `Follow notification for ${event.broadcaster_user_name} sent. Message ID: ${messageId}.`
   );
-};
+}
 
-const sendOnline = async (event) => {
+export async function sendOnline(event) {
   const data = await getStreamData(event.broadcaster_user_id);
 
   const { messageId } = await courier.lists.send({
@@ -82,7 +36,7 @@ const sendOnline = async (event) => {
   console.log(
     `Online notification for ${event.broadcaster_user_name} sent. Message ID: ${messageId}.`
   );
-};
+}
 
 const getStreamData = async (userId) => {
   const stream = await twitch.helix.streams.getStreamByUserId(userId);
@@ -99,7 +53,6 @@ const getStreamData = async (userId) => {
       type: stream.type,
       startDate: stream.startDate,
       title: stream.title,
-      tagIds: stream.tagIds,
       thumbnailUrl: stream.thumbnailUrl.replace("-{width}x{height}", ""),
       viewers: stream.viewers
     },
@@ -121,10 +74,3 @@ const getStreamData = async (userId) => {
   };
   return data;
 };
-
-export const config = {
-  api: {
-    bodyParser: false
-  }
-};
-export default withVerifyTwitch(handler);

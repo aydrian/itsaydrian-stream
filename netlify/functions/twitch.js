@@ -32,8 +32,8 @@ async function twitchHandler(event, context) {
     try {
       if (type === "stream.online") {
         await sendOnline(event);
-      } else if (type === "channel.follow") {
-        await sendFollow(event);
+      } else if (type === "channel.follow" || type === "channel.subscribe") {
+        await sendFollow(type, event);
       }
     } catch (ex) {
       console.log(

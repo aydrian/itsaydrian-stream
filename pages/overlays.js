@@ -9,6 +9,12 @@ export default function Home() {
       //You got this from the Courier Integrations page
       clientKey: "YzI4MWYyYzgtMjAxNi00M2EyLTgyZTEtZjhhM2JmNTZhOTdh"
     });
+
+    courierTransport.intercept((message) => {
+      // Make sound happen
+      console.log(message.data);
+      return message;
+    });
   }
 
   useEffect(() => {

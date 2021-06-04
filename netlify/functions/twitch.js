@@ -45,7 +45,7 @@ async function twitchHandler(event, context) {
       } else if (
         type === "channel.channel_points_custom_reward_redemption.add"
       ) {
-        pusher.trigger("itsaydrian-stream", "redeem-channelpoints", {
+        await pusher.trigger("itsaydrian-stream", "redeem-channelpoints", {
           type,
           event
         });

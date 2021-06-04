@@ -12,7 +12,9 @@ export default function Home() {
 
     courierTransport.intercept((message) => {
       // Make sound happen
-      console.log(message.data);
+      const audio = new Audio("/t-rex-roar.mp3");
+      audio.play();
+      console.log(message);
       return message;
     });
   }

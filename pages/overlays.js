@@ -1,8 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ToastProvider } from "@trycourier/react-toast";
 import { CourierTransport } from "@trycourier/react-provider";
+import Pusher from "pusher-js";
 
 export default function Home() {
+  const [reward, setReward] = useState({});
   let courierTransport;
   if (typeof window !== "undefined") {
     courierTransport = new CourierTransport({
@@ -17,21 +19,40 @@ export default function Home() {
     });
   }
 
+  Pusher.logToConsole = true;
+  const pusher = new Pusher("20520b82edbfca3c0603", {
+    cluster: "us2"
+  });
+
   useEffect(() => {
     courierTransport.subscribe(
       "ITSAYDRIAN_STREAM_OVERLAY",
       "TWITCH_ITSAYDRIAN_FOLLOWER"
     );
     // It is good practice to unsubscribe on component unmount
-    return () =>
+
+    const channel = pusher.subscribe("itsaydrian-stream");
+    channel.bind("redeem-channelpoints", function (data) {
+      //alert(JSON.stringify(data));
+      setReward(data);
+    });
+    return () => {
       courierTransport.unsubscribe(
         "ITSAYDRIAN_STREAM_OVERLAY",
         "TWITCH_ITSAYDRIAN_FOLLOWER"
       );
+      // TODO unbind channel
+      channel.unbind("redeem-channelpoints");
+    };
   }, []);
   return (
     <ToastProvider transport={courierTransport}>
-      <div></div>
+      <div>
+        <h1>
+          {reward.event &&
+            `${reward.event.user_name}: ${reward.event.reward.title}`}
+        </h1>
+      </div>
     </ToastProvider>
   );
 }

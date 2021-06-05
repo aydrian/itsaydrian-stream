@@ -27,7 +27,7 @@ export default function Home() {
   useEffect(() => {
     courierTransport.subscribe(
       "ITSAYDRIAN_STREAM_OVERLAY",
-      "TWITCH_ITSAYDRIAN_FOLLOWER"
+      "TWITCH_ITSAYDRIAN_ALERT"
     );
     // It is good practice to unsubscribe on component unmount
 
@@ -39,9 +39,8 @@ export default function Home() {
     return () => {
       courierTransport.unsubscribe(
         "ITSAYDRIAN_STREAM_OVERLAY",
-        "TWITCH_ITSAYDRIAN_FOLLOWER"
+        "TWITCH_ITSAYDRIAN_ALERT"
       );
-      // TODO unbind channel
       channel.unbind("redeem-channelpoints");
     };
   }, []);

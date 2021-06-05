@@ -11,7 +11,7 @@ const twitch = new ApiClient({ authProvider });
 
 export async function sendFollow(type, event) {
   const { messageId } = await courier.send({
-    eventId: "TWITCH_ITSAYDRIAN_FOLLOWER",
+    eventId: "TWITCH_ITSAYDRIAN_ALERT",
     recipientId: "ITSAYDRIAN_STREAM_OVERLAY",
     profile: {
       courier: {

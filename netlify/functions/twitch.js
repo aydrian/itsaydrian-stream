@@ -1,5 +1,14 @@
 import withVerifyTwitch from "../lib/withVerifyTwitch";
 import { sendFollow, sendOnline } from "../lib/courier";
+import Pusher from "pusher";
+
+const pusher = new Pusher({
+  appId: process.env.PUSHER_APP_ID,
+  key: process.env.NEXT_PUBLIC_PUSHER_KEY,
+  secret: process.env.PUSHER_SECRET,
+  cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
+  useTLS: true
+});
 
 async function twitchHandler(event, context) {
   if (event.httpMethod !== "POST") {
@@ -11,7 +20,6 @@ async function twitchHandler(event, context) {
   }
 
   const body = JSON.parse(event.body);
-  console.log(body);
   const messageType = event.headers["twitch-eventsub-message-type"];
   if (messageType === "webhook_callback_verification") {
     return {
@@ -34,6 +42,13 @@ async function twitchHandler(event, context) {
         await sendOnline(event);
       } else if (type === "channel.follow" || type === "channel.subscribe") {
         await sendFollow(type, event);
+      } else if (
+        type === "channel.channel_points_custom_reward_redemption.add"
+      ) {
+        await pusher.trigger("itsaydrian-stream", "redeem-channelpoints", {
+          type,
+          event
+        });
       }
     } catch (ex) {
       console.log(

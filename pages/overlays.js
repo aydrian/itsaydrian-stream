@@ -1,27 +1,20 @@
 import { useEffect, useState } from "react";
-import { ToastProvider } from "@trycourier/react-toast";
-import { CourierTransport } from "@trycourier/react-provider";
+import { CourierProvider, CourierTransport } from "@trycourier/react-provider";
+import { Toast } from "@trycourier/react-toast";
 import Pusher from "pusher-js";
 
-export default function Home() {
+export default function Overlays() {
   const [reward, setReward] = useState({});
   let courierTransport;
   if (typeof window !== "undefined") {
     courierTransport = new CourierTransport({
-      //You got this from the Courier Integrations page
-      clientKey: "YzI4MWYyYzgtMjAxNi00M2EyLTgyZTEtZjhhM2JmNTZhOTdh"
-    });
-
-    courierTransport.intercept((message) => {
-      // Make sound happen
-      console.log(message.data);
-      return message;
+      clientKey: process.env.NEXT_PUBLIC_COURIER_CLIENT_KEY
     });
   }
 
   Pusher.logToConsole = true;
-  const pusher = new Pusher("20520b82edbfca3c0603", {
-    cluster: "us2"
+  const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
+    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER
   });
 
   useEffect(() => {
@@ -45,13 +38,14 @@ export default function Home() {
     };
   }, []);
   return (
-    <ToastProvider transport={courierTransport}>
+    <CourierProvider transport={courierTransport}>
+      <Toast />
       <div>
         <h1>
           {reward.event &&
             `${reward.event.user_name}: ${reward.event.reward.title}`}
         </h1>
       </div>
-    </ToastProvider>
+    </CourierProvider>
   );
 }

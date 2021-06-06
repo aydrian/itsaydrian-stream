@@ -18,6 +18,11 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "twitch": "^4.5.3",
-    "twitch-auth": "^4.5.3"
+    "twitch-auth": "^4.5.3",
+    "use-sound": "^4.0.0"
+  },
+  "devDependencies": {
+    "file-loader": "^6.2.0",
+    "url-loader": "^4.1.1"
   }
 }

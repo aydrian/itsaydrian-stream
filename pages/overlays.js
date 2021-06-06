@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import { CourierProvider, CourierTransport } from "@trycourier/react-provider";
 import { Toast } from "@trycourier/react-toast";
 import Pusher from "pusher-js";
+import useSound from "use-sound";
+import trexSfx from "../public/t-rex-roar.mp3";
 
 export default function Overlays() {
   const [reward, setReward] = useState({});
+  const [play] = useSound(trexSfx);
   let courierTransport;
   if (typeof window !== "undefined") {
     courierTransport = new CourierTransport({
@@ -13,9 +16,10 @@ export default function Overlays() {
 
     courierTransport.intercept((message) => {
       // Make sound happen
-      const audio = new Audio("/t-rex-roar.mp3");
-      audio.play();
+      //const audio = new Audio("/t-rex-roar.mp3");
+      //audio.play();
       console.log(message);
+      play();
       return message;
     });
   }

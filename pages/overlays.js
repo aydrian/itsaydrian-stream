@@ -3,6 +3,8 @@ import { CourierProvider, CourierTransport } from "@trycourier/react-provider";
 import { Toast } from "@trycourier/react-toast";
 import Pusher from "pusher-js";
 
+const REWARD_BOOP_ATTICUS = "644b10b6-92ac-4f59-8baa-21c3b3cae5cb";
+
 export default function Overlays() {
   const [reward, setReward] = useState({});
   let courierTransport;
@@ -26,8 +28,13 @@ export default function Overlays() {
 
     const channel = pusher.subscribe("itsaydrian-stream");
     channel.bind("redeem-channelpoints", function (data) {
-      //alert(JSON.stringify(data));
-      setReward(data);
+      console.log("event data: ", data);
+      if (data.event?.reward?.id === REWARD_BOOP_ATTICUS) {
+        setReward(data);
+        setTimeout(() => {
+          setReward({});
+        }, 10000);
+      }
     });
     return () => {
       courierTransport.unsubscribe(
@@ -41,11 +48,43 @@ export default function Overlays() {
     <CourierProvider transport={courierTransport}>
       <Toast />
       <div>
-        <h1>
-          {reward.event &&
-            `${reward.event.user_name}: ${reward.event.reward.title}`}
-        </h1>
+        {reward.event && (
+          <div
+            style={{
+              position: "absolute",
+              top: "450px",
+              left: "25px",
+              textAlign: "center"
+            }}
+          >
+            <img src="atticus.gif" width="200px" />
+            <p style={{ fontWeight: "bold", textAlign: "center" }}>
+              {reward.event?.user_name} booped Atticus!
+            </p>
+          </div>
+        )}
       </div>
     </CourierProvider>
   );
 }
+
+/**
+ {
+    "broadcaster_user_id": "114823831",
+    "broadcaster_user_login": "itsaydrian",
+    "broadcaster_user_name": "ItsAydrian",
+    "id": "c9f02628-4a20-47ee-875d-46c41e7fff0e",
+    "user_id": "114823831",
+    "user_login": "itsaydrian",
+    "user_name": "ItsAydrian",
+    "user_input": "",
+    "status": "unfulfilled",
+    "redeemed_at": "2021-06-11T22:43:39.846939991Z",
+    "reward": {
+        "id": "644b10b6-92ac-4f59-8baa-21c3b3cae5cb",
+        "title": "Boop Atticus",
+        "prompt": "Give Atticus the boops",
+        "cost": 100
+    }
+}
+ */

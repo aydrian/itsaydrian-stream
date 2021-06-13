@@ -1,6 +1,6 @@
 const TWITCH_CDN_URL = "https://static-cdn.jtvnw.net/emoticons/v1";
 
-exports.parseCommand = (message) => {
+export const parseCommand = (message) => {
   const [cmd, ...args] = message.split(" ");
   const command = cmd.replace("!", "");
 
@@ -10,7 +10,7 @@ exports.parseCommand = (message) => {
   };
 };
 
-exports.parseAuthor = (channel, meta) => ({
+export const parseAuthor = (channel, meta) => ({
   id: meta["user-id"],
   username: meta["display-name"],
   roles: [
@@ -21,7 +21,7 @@ exports.parseAuthor = (channel, meta) => ({
   ].filter(Boolean)
 });
 
-exports.parseEmotes = (message, emotesData) => {
+export const parseEmotes = (message, emotesData) => {
   // loop through each emote used in this message
   const emotes = Object.entries(emotesData || {}).map(([id, locationsRaw]) => {
     // turn the array of ranges into an array of arrays with start/end indices
@@ -58,7 +58,7 @@ const escapeRegExSpecialChars = (string) => {
   return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
 };
 
-exports.getMessageHTML = (message, emotes, size = "medium") => {
+export const getMessageHTML = (message, emotes, size = "medium") => {
   let html = message;
 
   emotes.map((emote) => {

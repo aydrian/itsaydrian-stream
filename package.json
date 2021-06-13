@@ -12,11 +12,15 @@
     "@trycourier/courier": "^2.1.0",
     "@trycourier/react-provider": "*",
     "@trycourier/react-toast": "*",
+    "matter-js": "^0.17.1",
     "next": "^10.0.9",
     "pusher": "^5.0.0",
     "pusher-js": "^7.0.3",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "rehype": "^11.0.0",
+    "rehype-sanitize": "^4.0.0",
+    "tmi.js": "^1.8.3",
     "twitch": "^4.5.3",
     "twitch-auth": "^4.5.3"
   }

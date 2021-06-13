@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { CourierProvider, CourierTransport } from "@trycourier/react-provider";
 import { Toast } from "@trycourier/react-toast";
 import Pusher from "pusher-js";
+import { ChatProvider } from "@context/chat";
+import { Chat } from "@components/Chat";
+import { EmoteDrop } from "@components/EmoteDrop";
 
 const REWARD_BOOP_ATTICUS = "644b10b6-92ac-4f59-8baa-21c3b3cae5cb";
 
@@ -46,24 +49,38 @@ export default function Overlays() {
   }, []);
   return (
     <CourierProvider transport={courierTransport}>
-      <Toast />
-      <div>
-        {reward.event && (
-          <div
-            style={{
-              position: "absolute",
-              top: "450px",
-              left: "25px",
-              textAlign: "center"
-            }}
-          >
-            <img src="atticus.gif" width="200px" />
-            <p style={{ fontWeight: "bold", textAlign: "center" }}>
-              {reward.event?.user_name} booped Atticus!
-            </p>
-          </div>
-        )}
-      </div>
+      <ChatProvider channels={["itsaydrian"]}>
+        <Toast />
+        <EmoteDrop filter={["CorgiDerp", "DoritosChip"]} />
+        <div>
+          {reward.event && (
+            <div
+              style={{
+                position: "absolute",
+                top: "450px",
+                left: "25px",
+                textAlign: "center"
+              }}
+            >
+              <img src="atticus.gif" width="200px" />
+              <p style={{ fontWeight: "bold", textAlign: "center" }}>
+                {reward.event?.user_name} booped Atticus!
+              </p>
+            </div>
+          )}
+        </div>
+        <div
+          style={{
+            position: "absolute",
+            top: "570px",
+            left: "50px",
+            width: "320px",
+            height: "140px"
+          }}
+        >
+          <Chat />
+        </div>
+      </ChatProvider>
     </CourierProvider>
   );
 }

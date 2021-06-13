@@ -73,7 +73,7 @@ export default function Overlays() {
           style={{
             position: "absolute",
             top: "570px",
-            left: "10px",
+            left: "50px",
             width: "320px",
             height: "140px"
           }}

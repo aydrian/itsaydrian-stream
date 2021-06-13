@@ -4,6 +4,7 @@ import { Toast } from "@trycourier/react-toast";
 import Pusher from "pusher-js";
 import { ChatProvider } from "@context/chat";
 import { Chat } from "@components/Chat";
+import { EmoteDrop } from "@components/EmoteDrop";
 
 const REWARD_BOOP_ATTICUS = "644b10b6-92ac-4f59-8baa-21c3b3cae5cb";
 
@@ -50,6 +51,7 @@ export default function Overlays() {
     <CourierProvider transport={courierTransport}>
       <ChatProvider channels={["itsaydrian"]}>
         <Toast />
+        <EmoteDrop filter={["CorgiDerp", "DoritosChip"]} />
         <div>
           {reward.event && (
             <div
@@ -67,7 +69,7 @@ export default function Overlays() {
             </div>
           )}
         </div>
-        <Chat />
+        {false && <Chat />}
       </ChatProvider>
     </CourierProvider>
   );

@@ -12,6 +12,7 @@
     "@trycourier/courier": "^2.1.0",
     "@trycourier/react-provider": "*",
     "@trycourier/react-toast": "*",
+    "matter-js": "^0.17.1",
     "next": "^10.0.9",
     "pusher": "^5.0.0",
     "pusher-js": "^7.0.3",

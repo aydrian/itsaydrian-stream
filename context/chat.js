@@ -13,7 +13,6 @@ export function ChatProvider({ children, channels, identity }) {
   const [client, setClient] = useState();
 
   useEffect(() => {
-    console.log("Creating the chat client.", channels);
     const _client = new tmi.Client({
       connection: {
         secure: true,
@@ -22,8 +21,6 @@ export function ChatProvider({ children, channels, identity }) {
       channels,
       identity
     });
-    console.log(_client);
-    console.log("Turning on the chat client");
     _client.connect();
     setClient(_client);
 
@@ -55,7 +52,7 @@ export function useChatMessages() {
     /** Return early if there's no client */
     if (!client) return;
 
-    client.on("message", async (channel, tags, msg, self) => {
+    const listener = async (channel, tags, msg, self) => {
       // don’t process messages sent by the chatbot to avoid loops
       if (self) return;
 
@@ -86,7 +83,13 @@ export function useChatMessages() {
       }
 
       return setMessages((prev) => [...prev, message]);
-    });
+    };
+
+    client.on("message", listener);
+
+    return () => {
+      client.removeListener("message", listener);
+    };
   }, [client]);
 
   return messages;

@@ -69,7 +69,17 @@ export default function Overlays() {
             </div>
           )}
         </div>
-        {false && <Chat />}
+        <div
+          style={{
+            position: "absolute",
+            top: "570px",
+            left: "10px",
+            width: "320px",
+            height: "140px"
+          }}
+        >
+          <Chat />
+        </div>
       </ChatProvider>
     </CourierProvider>
   );

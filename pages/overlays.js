@@ -44,7 +44,8 @@ export default function Overlays() {
         "ITSAYDRIAN_STREAM_OVERLAY",
         "TWITCH_ITSAYDRIAN_ALERT"
       );
-      channel.unbind("redeem-channelpoints");
+      channel.unbind_all();
+      channel.unsubscribe();
     };
   }, []);
   return (

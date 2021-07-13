@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import { CourierProvider, CourierTransport } from "@trycourier/react-provider";
-import { Toast } from "@trycourier/react-toast";
 import Pusher from "pusher-js";
 import { ChatProvider } from "@context/chat";
 import { Chat } from "@components/Chat";
@@ -10,24 +8,12 @@ const REWARD_BOOP_ATTICUS = "644b10b6-92ac-4f59-8baa-21c3b3cae5cb";
 
 export default function Overlays() {
   const [reward, setReward] = useState({});
-  let courierTransport;
-  if (typeof window !== "undefined") {
-    courierTransport = new CourierTransport({
-      clientKey: process.env.NEXT_PUBLIC_COURIER_CLIENT_KEY
-    });
-  }
-
-  Pusher.logToConsole = true;
-  const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
-    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER
-  });
 
   useEffect(() => {
-    courierTransport.subscribe(
-      "ITSAYDRIAN_STREAM_OVERLAY",
-      "TWITCH_ITSAYDRIAN_ALERT"
-    );
-    // It is good practice to unsubscribe on component unmount
+    // Pusher.logToConsole = true;
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER
+    });
 
     const channel = pusher.subscribe("itsaydrian-stream");
     channel.bind("redeem-channelpoints", function (data) {
@@ -39,50 +25,44 @@ export default function Overlays() {
         }, 10000);
       }
     });
+
     return () => {
-      courierTransport.unsubscribe(
-        "ITSAYDRIAN_STREAM_OVERLAY",
-        "TWITCH_ITSAYDRIAN_ALERT"
-      );
       channel.unbind_all();
       channel.unsubscribe();
     };
   }, []);
   return (
-    <CourierProvider transport={courierTransport}>
-      <ChatProvider channels={["itsaydrian"]}>
-        <Toast />
-        <EmoteDrop filter={["CorgiDerp", "DoritosChip"]} />
-        <div>
-          {reward.event && (
-            <div
-              style={{
-                position: "absolute",
-                top: "450px",
-                left: "25px",
-                textAlign: "center"
-              }}
-            >
-              <img src="atticus.gif" width="200px" />
-              <p style={{ fontWeight: "bold", textAlign: "center" }}>
-                {reward.event?.user_name} booped Atticus!
-              </p>
-            </div>
-          )}
-        </div>
-        <div
-          style={{
-            position: "absolute",
-            top: "570px",
-            left: "50px",
-            width: "320px",
-            height: "140px"
-          }}
-        >
-          <Chat />
-        </div>
-      </ChatProvider>
-    </CourierProvider>
+    <ChatProvider channels={["itsaydrian"]}>
+      <EmoteDrop filter={["CorgiDerp", "DoritosChip"]} />
+      <div>
+        {reward.event && (
+          <div
+            style={{
+              position: "absolute",
+              top: "450px",
+              left: "25px",
+              textAlign: "center"
+            }}
+          >
+            <img src="atticus.gif" width="200px" />
+            <p style={{ fontWeight: "bold", textAlign: "center" }}>
+              {reward.event?.user_name} booped Atticus!
+            </p>
+          </div>
+        )}
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          top: "570px",
+          left: "50px",
+          width: "320px",
+          height: "140px"
+        }}
+      >
+        <Chat />
+      </div>
+    </ChatProvider>
   );
 }
 

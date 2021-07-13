@@ -1,14 +1,6 @@
 import withVerifyTwitch from "../lib/withVerifyTwitch";
-import { sendFollow, sendOnline } from "../lib/courier";
-import Pusher from "pusher";
-
-const pusher = new Pusher({
-  appId: process.env.PUSHER_APP_ID,
-  key: process.env.NEXT_PUBLIC_PUSHER_KEY,
-  secret: process.env.PUSHER_SECRET,
-  cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
-  useTLS: true
-});
+import { sendAlert } from "../lib/alerts";
+import { pusher } from "../lib/pusher";
 
 async function twitchHandler(event, context) {
   if (event.httpMethod !== "POST") {
@@ -39,9 +31,9 @@ async function twitchHandler(event, context) {
 
     try {
       if (type === "stream.online") {
-        await sendOnline(event);
+        // todo
       } else if (type === "channel.follow" || type === "channel.subscribe") {
-        await sendFollow(type, event);
+        await sendAlert(type, event);
       } else if (
         type === "channel.channel_points_custom_reward_redemption.add"
       ) {

@@ -1,6 +1,5 @@
 import withVerifyTwitch from "../lib/withVerifyTwitch";
-import { sendAlert } from "../lib/alerts";
-import { pusher } from "../lib/pusher";
+import { sendAlert, sendReward } from "../lib/alerts";
 
 async function twitchHandler(event, context) {
   if (event.httpMethod !== "POST") {
@@ -37,10 +36,7 @@ async function twitchHandler(event, context) {
       } else if (
         type === "channel.channel_points_custom_reward_redemption.add"
       ) {
-        await pusher.trigger("itsaydrian-stream", "redeem-channelpoints", {
-          type,
-          event
-        });
+        await sendReward(type, event);
       }
     } catch (ex) {
       console.log(

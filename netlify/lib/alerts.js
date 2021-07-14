@@ -16,3 +16,19 @@ export const sendAlert = async (type, event) => {
     }
   });
 };
+
+export const sendReward = async (type, event) => {
+  // TODO look up user info if subscribe or follow. Send better payload.
+  const viewer = await twitch.helix.users.getUserById(event.user_id);
+
+  await pusher.trigger("itsaydrian-stream", "redeem-channelpoints", {
+    type,
+    event,
+    viewer: {
+      id: viewer.id,
+      name: viewer.name,
+      displayName: viewer.displayName,
+      profilePictureUrl: viewer.profilePictureUrl
+    }
+  });
+};

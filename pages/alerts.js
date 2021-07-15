@@ -11,10 +11,18 @@ const getMessage = (event) => {
   }
 };
 
+const getSound = (event) => {
+  if (event.type === "channel.follow") {
+    return `/sfx/follow_alert.mp3`;
+  } else if (event.type === "channel.subscribe") {
+    return `/sfx/subscribe_alert.mp3`;
+  }
+};
+
 const Alert = ({ event }) => (
   <div>
     <audio autoPlay>
-      <source src="/t-rex-roar.mp3" type="audio/mp3" />
+      <source src={getSound(event)} type="audio/mp3" />
     </audio>
     <Flex>
       <Box>

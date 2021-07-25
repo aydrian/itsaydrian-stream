@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build && make build"
+  command = "make build && npm run build"
   publish = "out"
 
 [[redirects]]
@@ -9,3 +9,4 @@
 
 [functions]
   node_bundler = "esbuild"
+  

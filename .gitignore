@@ -29,5 +29,9 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# rust
+target
+bins
+
 # Local Netlify folder
 .netlify

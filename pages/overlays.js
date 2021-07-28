@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import Pusher from "pusher-js";
 import { ChatProvider } from "@context/chat";
-import { Chat } from "@components/Chat";
 import { EmoteDrop } from "@components/EmoteDrop";
 
 const REWARD_BOOP_ATTICUS = "644b10b6-92ac-4f59-8baa-21c3b3cae5cb";
@@ -54,18 +53,7 @@ export default function Overlays() {
   return (
     <ChatProvider channels={["itsaydrian"]}>
       <EmoteDrop filter={["CorgiDerp", "DoritosChip"]} />
-      <div>{reward.event && <AtticusBoop event={reward.event} />}</div>
-      <div
-        style={{
-          position: "absolute",
-          top: "570px",
-          left: "50px",
-          width: "320px",
-          height: "140px"
-        }}
-      >
-        <Chat />
-      </div>
+      {reward.event && <AtticusBoop event={reward.event} />}
     </ChatProvider>
   );
 }

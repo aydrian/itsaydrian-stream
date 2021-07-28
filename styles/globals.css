@@ -49,3 +49,21 @@ code {
   justify-content: center;
   align-items: center;
 }
+
+.chat-message strong {
+  overflow: hidden;
+  text-align: right;
+  text-overflow: ellipsis;
+}
+
+.chat-message span {
+  word-break: break-word;
+}
+
+.chat-message img {
+  display: inline-block;
+  line-height: 1;
+  margin: -6px 0 -4px;
+  vertical-align: middle;
+  width: 24px;
+}

@@ -58,7 +58,7 @@ function ChatMessage({ message }) {
         />
       </Box>
       <Box flex="1" p="3">
-        <Text fontSize="md">
+        <Text fontSize="md" className="chat-message">
           <strong style={{ color: getUsernameColor(message.author.roles) }}>
             {message.author.username}:
           </strong>{" "}

@@ -13,6 +13,7 @@ export const parseCommand = (message) => {
 export const parseAuthor = (channel, meta) => ({
   id: meta["user-id"],
   username: meta["display-name"],
+  profileImageUrl: meta.profileImageUrl,
   roles: [
     meta.mod && "MODERATOR",
     meta.subscriber && "SUBSCRIBER",
@@ -58,7 +59,7 @@ const escapeRegExSpecialChars = (string) => {
   return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
 };
 
-export const getMessageHTML = (message, emotes, size = "medium") => {
+export const getMessageHTML = (message, emotes, size = "small") => {
   let html = message;
 
   emotes.map((emote) => {

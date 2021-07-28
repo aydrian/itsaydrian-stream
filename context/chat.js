@@ -47,6 +47,22 @@ export function useChatClient() {
 export function useChatMessages() {
   const { client } = useContext(ChatContext);
   const [messages, setMessages] = useState([]);
+  const profileImages = {
+    114823831:
+      "https://static-cdn.jtvnw.net/jtv_user_pictures/905046a7-e4d4-4e9d-b337-df8531fb8bfe-profile_image-300x300.png"
+  };
+
+  const getProfileImage = async (userId) => {
+    if (profileImages[userId]) {
+      return profileImages[userId];
+    }
+
+    const { profilePictureUrl } = await fetch(
+      `http://localhost:8888/.netlify/functions/twitchUser?userId=${userId}`
+    ).then((response) => response.json());
+    profileImages[userId] = profilePictureUrl;
+    return profilePictureUrl;
+  };
 
   useEffect(() => {
     /** Return early if there's no client */
@@ -60,6 +76,9 @@ export function useChatMessages() {
         // we don’t handle whispers
         return;
       }
+
+      // Grab profile image once per user
+      tags.profileImageUrl = (await getProfileImage(tags["user-id"])) || "";
 
       // chat activity always includes author and emote data
       const time = new Date(parseInt(tags["tmi-sent-ts"]));

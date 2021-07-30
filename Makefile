@@ -26,6 +26,7 @@ build:
 		@cargo build --release --target x86_64-unknown-linux-musl
 		@mkdir -p netlify/functions
 		@cp target/x86_64-unknown-linux-musl/release/twitch_user netlify/functions
+		@cp target/x86_64-unknown-linux-musl/release/twitch_eventsub netlify/functions
 
 local:
 	cargo build --release --target x86_64-unknown-linux-musl

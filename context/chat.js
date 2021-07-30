@@ -58,7 +58,7 @@ export function useChatMessages() {
     }
 
     const { profilePictureUrl } = await fetch(
-      `http://localhost:8888/.netlify/functions/twitchUser?userId=${userId}`
+      `/.netlify/functions/twitchUser?userId=${userId}`
     ).then((response) => response.json());
     profileImages[userId] = profilePictureUrl;
     return profilePictureUrl;

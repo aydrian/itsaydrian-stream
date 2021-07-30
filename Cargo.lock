@@ -1282,14 +1282,11 @@ name = "twitch_eventsub"
 version = "0.1.0"
 dependencies = [
  "eyre",
- "hmac",
  "lamedh_http",
- "reqwest",
  "serde",
  "serde_json",
  "tokio",
  "twitch_api2",
- "twitch_oauth2",
 ]
 
 [[package]]

@@ -14,11 +14,11 @@ use twitch_api2::eventsub::Payload;
 #[lambda(http)]
 #[tokio::main]
 async fn main(request: Request, _: Context) -> Result<impl IntoResponse, Error> {
+    // Convert to http::Request<Vec<u8>> to make twitch_api2 happy. Thanks @chrisbiscardi
+    let request = request.map(|body| body.as_ref().into());
     let signing_secret =
         std::env::var("TWITCH_SIGNING_SECRET").expect("TWITCH_CLIENT_ID was not set");
 
-    let (parts, body) = request.into_parts();
-    let request = lamedh_http::http::Request::from_parts(parts, body.as_ref().to_vec());
     if !Payload::verify_payload(&request, &signing_secret.as_bytes()) {
         return Ok(Response::builder()
             .status(StatusCode::UNPROCESSABLE_ENTITY)

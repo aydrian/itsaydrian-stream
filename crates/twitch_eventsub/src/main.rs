@@ -106,7 +106,7 @@ async fn send_reward_alert(
         .unwrap();
     push(
         String::from("itsaydrian-stream"),
-        String::from("alerts"),
+        String::from("redeem-channelpoints"),
         json!({
             "type": "channel.channel_points_custom_reward_redemption.add",
             "event": notif_payload.event,
@@ -132,15 +132,12 @@ async fn push(
     let secret = std::env::var("PUSHER_SECRET").expect("PUSHER_SECRET was not set");
     let cluster = std::env::var("NEXT_PUBLIC_PUSHER_CLUSTER")
         .expect("NEXT_PUBLIC_PUSHER_CLUSTER was not set");
+    // Need to use from_url to get around lack of cluster support for Pusher Channels
     let pusher = PusherBuilder::from_url(&format!(
         "http://{}:{}@api-{}.pusher.com/apps/{}",
         key, secret, cluster, app_id
     ))
     .finalize();
-    /*let pusher = PusherBuilder::new(&app_id, &key, &secret)
-    .host(&format!("api-{}.pusher.com", cluster))
-    .secure()
-    .finalize();*/
 
     pusher.trigger(&channel, &event, payload).await?;
     Ok(())

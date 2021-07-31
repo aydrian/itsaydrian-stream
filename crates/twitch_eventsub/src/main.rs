@@ -133,7 +133,8 @@ async fn push(
     let cluster = std::env::var("NEXT_PUBLIC_PUSHER_CLUSTER")
         .expect("NEXT_PUBLIC_PUSHER_CLUSTER was not set");
     let pusher = PusherBuilder::new(&app_id, &key, &secret)
-        .host(&format!("api-{}.pusher.com ", cluster))
+        .host(&format!("api-{}.pusher.com", cluster))
+        .secure()
         .finalize();
 
     pusher.trigger(&channel, &event, payload).await?;

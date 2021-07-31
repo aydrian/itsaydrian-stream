@@ -24,6 +24,30 @@ async fn main(request: Request, _: Context) -> Result<impl IntoResponse, Error> 
         }
     };
 
+    match get_user_from_id(user_id).await.unwrap() {
+        Some(user) => Ok(Response::builder()
+            .status(StatusCode::OK)
+            .body(
+                json!({
+                    "id": user.id,
+                    "name": user.display_name,
+                    "displayName": user.display_name,
+                    "description": user.description,
+                    "profilePictureUrl": user.profile_image_url
+                })
+                .to_string(),
+            )
+            .unwrap()),
+        None => Ok(Response::builder()
+            .status(StatusCode::NOT_FOUND)
+            .body(json!({"message": "user not found"}).to_string())
+            .unwrap()),
+    }
+}
+
+async fn get_user_from_id(
+    user_id: String,
+) -> Result<Option<twitch_api2::helix::users::User>, Box<dyn std::error::Error>> {
     let client_id = match std::env::var("TWITCH_CLIENT_ID") {
         Ok(val) => ClientId::new(val),
         Err(_e) => panic!("TWITCH_CLIENT_ID was not set"),
@@ -48,24 +72,6 @@ async fn main(request: Request, _: Context) -> Result<impl IntoResponse, Error> 
     };
 
     let helix: HelixClient<'static, reqwest::Client> = HelixClient::default();
-    // better error handling rather than unwrap?
-    match helix.get_user_from_id(user_id, &token).await.unwrap() {
-        Some(user) => Ok(Response::builder()
-            .status(StatusCode::OK)
-            .body(
-                json!({
-                    "id": user.id,
-                    "name": user.display_name,
-                    "displayName": user.display_name,
-                    "description": user.description,
-                    "profilePictureUrl": user.profile_image_url
-                })
-                .to_string(),
-            )
-            .unwrap()),
-        None => Ok(Response::builder()
-            .status(StatusCode::NOT_FOUND)
-            .body(json!({"message": "user not found"}).to_string())
-            .unwrap()),
-    }
+
+    Ok(helix.get_user_from_id(user_id, &token).await?)
 }

@@ -17,7 +17,7 @@ async fn main(request: Request, _: Context) -> Result<impl IntoResponse, Error> 
     // Convert to http::Request<Vec<u8>> to make twitch_api2 happy. Thanks @christopherbiscardi
     let request = request.map(|body| body.as_ref().into());
     let signing_secret =
-        std::env::var("TWITCH_SIGNING_SECRET").expect("TWITCH_CLIENT_ID was not set");
+        std::env::var("TWITCH_SIGNING_SECRET").expect("TWITCH_SIGNING_SECRET was not set");
 
     if !Payload::verify_payload(&request, &signing_secret.as_bytes()) {
         return Ok(Response::builder()

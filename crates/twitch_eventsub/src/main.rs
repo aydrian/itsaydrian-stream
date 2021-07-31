@@ -132,7 +132,7 @@ async fn push(
     let secret = std::env::var("PUSHER_SECRET").expect("PUSHER_SECRET was not set");
     let cluster = std::env::var("NEXT_PUBLIC_PUSHER_CLUSTER")
         .expect("NEXT_PUBLIC_PUSHER_CLUSTER was not set");
-    let pusher = PusherBuilder::from_url(format!(
+    let pusher = PusherBuilder::from_url(&format!(
         "http://{}:{}@api-{}.pusher.com/apps/{}",
         key, secret, cluster, app_id
     ))

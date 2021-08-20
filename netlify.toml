@@ -1,12 +1,16 @@
 [build]
-  command = "make build && npm run build"
-  publish = "out"
+command = "make build && npm run build"
+publish = "out"
 
 [[redirects]]
-  from = "/webhooks/twitch"
-  to = "/.netlify/functions/twitch"
-  status = 200
+from = "/webhooks/twitch"
+to = "/.netlify/functions/twitch_eventsub"
+status = 200
+
+[[redirects]]
+from = "/api/twitchUser"
+to = "/.netlify/functions/twitch_user"
+status = 200
 
 [functions]
-  node_bundler = "esbuild"
-  
+node_bundler = "esbuild"

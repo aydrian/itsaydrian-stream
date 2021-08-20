@@ -6,11 +6,12 @@ use lamedh_http::{
 use pusher::PusherBuilder;
 use reqwest;
 use serde_json::json;
-use twitch_api2::eventsub::{self, Payload};
-use twitch_api2::helix::HelixClient;
-use twitch_oauth2::{
-    client::reqwest_http_client, tokens::errors::TokenError, AppAccessToken, ClientId, ClientSecret,
+use twitch_api2::helix::{ClientRequestError, HelixClient};
+use twitch_api2::{
+    eventsub::{self, EventSubscription, Payload},
+    types::UserId,
 };
+use twitch_oauth2::{client::reqwest_http_client, AppAccessToken, ClientId, ClientSecret};
 
 #[lambda(http)]
 #[tokio::main]
@@ -34,10 +35,31 @@ async fn main(request: Request, _: Context) -> Result<impl IntoResponse, Error> 
                 .body(event.challenge)
                 .unwrap());
         }
-        Payload::ChannelFollowV1(event) => send_follow_alert(event).await.unwrap(),
-        Payload::ChannelSubscribeV1(event) => send_subscribe_alert(event).await.unwrap(),
+        Payload::ChannelFollowV1(event) => send_alert::<eventsub::channel::ChannelFollowV1>(
+            "alerts",
+            "channel.follow",
+            &event.event.user_id,
+            &event.event,
+        )
+        .await
+        .unwrap(),
+        Payload::ChannelSubscribeV1(event) => send_alert::<eventsub::channel::ChannelSubscribeV1>(
+            "alerts",
+            "channel.subscribe",
+            &event.event.user_id,
+            &event.event,
+        )
+        .await
+        .unwrap(),
         Payload::ChannelPointsCustomRewardRedemptionAddV1(event) => {
-            send_reward_alert(event).await.unwrap()
+            send_alert::<eventsub::channel::ChannelPointsCustomRewardRedemptionAddV1>(
+                "redeem-channelpoints",
+                "channel.channel_points_custom_reward_redemption.add",
+                &event.event.user_id,
+                &event.event,
+            )
+            .await
+            .unwrap()
         }
         _ => {}
     };
@@ -48,68 +70,19 @@ async fn main(request: Request, _: Context) -> Result<impl IntoResponse, Error> 
         .unwrap())
 }
 
-async fn send_follow_alert(
-    notif_payload: eventsub::NotificationPayload<eventsub::channel::ChannelFollowV1>,
+async fn send_alert<T: EventSubscription>(
+    topic: &str,
+    event_type: &str,
+    user_id: &UserId,
+    event: &T::Payload,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let viewer = get_user_from_id(notif_payload.event.user_id.to_string())
-        .await?
-        .unwrap();
+    let viewer = get_user_from_id(user_id).await?.unwrap();
     push(
         String::from("itsaydrian-stream"),
-        String::from("alerts"),
+        topic.to_string(),
         json!({
-            "type": "channel.follow",
-            "event": notif_payload.event,
-            "viewer": {
-                "id": viewer.id,
-                "name": viewer.display_name,
-                "displayName": viewer.display_name,
-                "profilePictureUrl": viewer.profile_image_url
-            }
-        }),
-    )
-    .await?;
-    Ok(())
-}
-
-async fn send_subscribe_alert(
-    notif_payload: eventsub::NotificationPayload<eventsub::channel::ChannelSubscribeV1>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let viewer = get_user_from_id(notif_payload.event.user_id.to_string())
-        .await?
-        .unwrap();
-    push(
-        String::from("itsaydrian-stream"),
-        String::from("alerts"),
-        json!({
-            "type": "channel.subscribe",
-            "event": notif_payload.event,
-            "viewer": {
-                "id": viewer.id,
-                "name": viewer.display_name,
-                "displayName": viewer.display_name,
-                "profilePictureUrl": viewer.profile_image_url
-            }
-        }),
-    )
-    .await?;
-    Ok(())
-}
-
-async fn send_reward_alert(
-    notif_payload: eventsub::NotificationPayload<
-        eventsub::channel::ChannelPointsCustomRewardRedemptionAddV1,
-    >,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let viewer = get_user_from_id(notif_payload.event.user_id.to_string())
-        .await?
-        .unwrap();
-    push(
-        String::from("itsaydrian-stream"),
-        String::from("redeem-channelpoints"),
-        json!({
-            "type": "channel.channel_points_custom_reward_redemption.add",
-            "event": notif_payload.event,
+            "type": event_type,
+            "event": event,
             "viewer": {
                 "id": viewer.id,
                 "name": viewer.display_name,
@@ -144,32 +117,22 @@ async fn push(
 }
 
 async fn get_user_from_id(
-    user_id: String,
-) -> Result<Option<twitch_api2::helix::users::User>, Box<dyn std::error::Error>> {
-    let client_id = match std::env::var("TWITCH_CLIENT_ID") {
-        Ok(val) => ClientId::new(val),
-        Err(_e) => panic!("TWITCH_CLIENT_ID was not set"),
-    };
+    user_id: &UserId,
+) -> Result<Option<twitch_api2::helix::users::User>, ClientRequestError<reqwest::Error>> {
+    let client_id = std::env::var("TWITCH_CLIENT_ID")
+        .map(|val| ClientId::new(val))
+        .expect("TWITCH_CLIENT_ID was not set");
 
-    let client_secret = match std::env::var("TWITCH_CLIENT_SECRET") {
-        Ok(val) => ClientSecret::new(val),
-        Err(_e) => panic!("TWITCH_CLIENT_SECRET was not set"),
-    };
+    let client_secret = std::env::var("TWITCH_CLIENT_SECRET")
+        .map(|val| ClientSecret::new(val))
+        .expect("TWITCH_CLIENT_SECRET was not set");
 
-    let token = match AppAccessToken::get_app_access_token(
-        reqwest_http_client,
-        client_id,
-        client_secret,
-        vec![],
-    )
-    .await
-    {
-        Ok(t) => t,
-        Err(TokenError::Request(e)) => panic!("got error: {:?}", e),
-        Err(e) => panic!("{:?}", e),
-    };
+    let token =
+        AppAccessToken::get_app_access_token(reqwest_http_client, client_id, client_secret, vec![])
+            .await
+            .unwrap();
 
     let helix: HelixClient<'static, reqwest::Client> = HelixClient::default();
 
-    Ok(helix.get_user_from_id(user_id, &token).await?)
+    helix.get_user_from_id(user_id.clone(), &token).await
 }

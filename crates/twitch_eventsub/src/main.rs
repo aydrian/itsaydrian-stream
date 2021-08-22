@@ -37,7 +37,6 @@ async fn main(request: Request, _: Context) -> Result<impl IntoResponse, Error> 
         }
         Payload::ChannelFollowV1(event) => send_alert::<eventsub::channel::ChannelFollowV1>(
             "alerts",
-            "channel.follow",
             &event.event.user_id,
             &event.event,
         )
@@ -45,7 +44,6 @@ async fn main(request: Request, _: Context) -> Result<impl IntoResponse, Error> 
         .unwrap(),
         Payload::ChannelSubscribeV1(event) => send_alert::<eventsub::channel::ChannelSubscribeV1>(
             "alerts",
-            "channel.subscribe",
             &event.event.user_id,
             &event.event,
         )
@@ -54,7 +52,6 @@ async fn main(request: Request, _: Context) -> Result<impl IntoResponse, Error> 
         Payload::ChannelPointsCustomRewardRedemptionAddV1(event) => {
             send_alert::<eventsub::channel::ChannelPointsCustomRewardRedemptionAddV1>(
                 "redeem-channelpoints",
-                "channel.channel_points_custom_reward_redemption.add",
                 &event.event.user_id,
                 &event.event,
             )
@@ -72,7 +69,6 @@ async fn main(request: Request, _: Context) -> Result<impl IntoResponse, Error> 
 
 async fn send_alert<T: EventSubscription>(
     topic: &str,
-    event_type: &str,
     user_id: &UserId,
     event: &T::Payload,
 ) -> Result<(), Box<dyn std::error::Error>> {
@@ -81,7 +77,7 @@ async fn send_alert<T: EventSubscription>(
         String::from("itsaydrian-stream"),
         topic.to_string(),
         json!({
-            "type": event_type,
+            "type": T::EVENT_TYPE.to_string(),
             "event": event,
             "viewer": {
                 "id": viewer.id,

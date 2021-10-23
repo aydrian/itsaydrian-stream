@@ -1,6 +1,7 @@
-use lamedh_http::{
-    http::StatusCode,
-    lambda::{lambda, Context, Error},
+use lambda_http::{
+    handler,
+    http::{self, StatusCode},
+    lambda_runtime::{self, Context, Error},
     IntoResponse, Request, Response,
 };
 use pusher::PusherBuilder;
@@ -11,13 +12,18 @@ use twitch_api2::{
     eventsub::{self, EventSubscription, Payload},
     types::UserId,
 };
-use twitch_oauth2::{client::reqwest_http_client, AppAccessToken, ClientId, ClientSecret};
+use twitch_oauth2::{AppAccessToken, ClientId, ClientSecret};
 
-#[lambda(http)]
 #[tokio::main]
-async fn main(request: Request, _: Context) -> Result<impl IntoResponse, Error> {
+async fn main() -> Result<(), Error> {
+    let handler_fn = handler(my_handler);
+    lambda_runtime::run(handler_fn).await?;
+    Ok(())
+}
+
+async fn my_handler(request: Request, _: Context) -> Result<impl IntoResponse, Error> {
     // Convert to http::Request<Vec<u8>> to make twitch_api2 happy. Thanks @christopherbiscardi
-    let request = request.map(|body| body.as_ref().into());
+    let request: http::Request<Vec<u8>> = request.map(|body| body.as_ref().into());
     let signing_secret =
         std::env::var("TWITCH_SIGNING_SECRET").expect("TWITCH_SIGNING_SECRET was not set");
 
@@ -123,10 +129,14 @@ async fn get_user_from_id(
         .map(|val| ClientSecret::new(val))
         .expect("TWITCH_CLIENT_SECRET was not set");
 
-    let token =
-        AppAccessToken::get_app_access_token(reqwest_http_client, client_id, client_secret, vec![])
-            .await
-            .unwrap();
+    let token = AppAccessToken::get_app_access_token(
+        &reqwest::Client::new(),
+        client_id,
+        client_secret,
+        vec![],
+    )
+    .await
+    .unwrap();
 
     let helix: HelixClient<'static, reqwest::Client> = HelixClient::default();
 

@@ -1,9 +1,7 @@
-use lambda_http::{
-    handler,
-    http::{self, StatusCode},
-    lambda_runtime::{self, Context, Error},
-    IntoResponse, Request, Response,
-};
+use aws_lambda_events::encodings::Body;
+use aws_lambda_events::event::apigw::{ApiGatewayProxyRequest, ApiGatewayProxyResponse};
+use http::header::HeaderMap;
+use lambda_runtime::{handler_fn, Context, Error};
 use pusher::PusherBuilder;
 use reqwest;
 use serde_json::json;
@@ -16,30 +14,42 @@ use twitch_oauth2::{AppAccessToken, ClientId, ClientSecret};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let handler_fn = handler(my_handler);
+    let handler_fn = handler_fn(handler);
     lambda_runtime::run(handler_fn).await?;
     Ok(())
 }
 
-async fn my_handler(request: Request, _: Context) -> Result<impl IntoResponse, Error> {
+async fn handler(
+    event: ApiGatewayProxyRequest,
+    _: Context,
+) -> Result<ApiGatewayProxyResponse, Error> {
     // Convert to http::Request<Vec<u8>> to make twitch_api2 happy. Thanks @christopherbiscardi
-    let request: http::Request<Vec<u8>> = request.map(|body| body.as_ref().into());
-    let signing_secret =
+    // let request: http::Request<Vec<u8>> = event.map(|body| body.as_ref().into());
+
+    /*let signing_secret =
         std::env::var("TWITCH_SIGNING_SECRET").expect("TWITCH_SIGNING_SECRET was not set");
 
     if !Payload::verify_payload(&request, &signing_secret.as_bytes()) {
-        return Ok(Response::builder()
-            .status(StatusCode::UNPROCESSABLE_ENTITY)
-            .body(String::from("Signature verification failed."))
-            .unwrap());
-    }
+        return Ok(ApiGatewayProxyResponse {
+            status_code: 422,
+            headers: HeaderMap::new(),
+            multi_value_headers: HeaderMap::new(),
+            body: Some(Body::Text(String::from("Signature verification failed."))),
+            is_base64_encoded: Some(false),
+        });
+    }*/
+    let payload = Payload::parse(&event.body.unwrap()).unwrap();
 
-    match Payload::parse_http(&request).unwrap() {
+    // match Payload::parse_http(&request).unwrap() {
+    match payload {
         Payload::VerificationRequest(event) => {
-            return Ok(Response::builder()
-                .status(StatusCode::OK)
-                .body(event.challenge)
-                .unwrap());
+            return Ok(ApiGatewayProxyResponse {
+                status_code: 200,
+                headers: HeaderMap::new(),
+                multi_value_headers: HeaderMap::new(),
+                body: Some(Body::Text(event.challenge)),
+                is_base64_encoded: Some(false),
+            });
         }
         Payload::ChannelFollowV1(event) => send_alert::<eventsub::channel::ChannelFollowV1>(
             "alerts",
@@ -67,10 +77,13 @@ async fn my_handler(request: Request, _: Context) -> Result<impl IntoResponse, E
         _ => {}
     };
 
-    Ok(Response::builder()
-        .status(StatusCode::OK)
-        .body(String::from("OK"))
-        .unwrap())
+    Ok(ApiGatewayProxyResponse {
+        status_code: 200,
+        headers: HeaderMap::new(),
+        multi_value_headers: HeaderMap::new(),
+        body: Some(Body::Text(String::from("OK"))),
+        is_base64_encoded: Some(false),
+    })
 }
 
 async fn send_alert<T: EventSubscription>(

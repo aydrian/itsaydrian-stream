@@ -539,20 +539,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lambda_http"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f10599c844cf7584c0dfbf6030df7c174cd5c91f2515412f8875de2a0f2b3fc5"
-dependencies = [
- "base64",
- "http",
- "lambda_runtime",
- "serde",
- "serde_json",
- "serde_urlencoded",
-]
-
-[[package]]
 name = "lambda_runtime"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1363,8 +1349,10 @@ dependencies = [
 name = "twitch_eventsub"
 version = "0.1.0"
 dependencies = [
+ "aws_lambda_events",
  "eyre",
- "lambda_http",
+ "http",
+ "lambda_runtime",
  "pusher",
  "reqwest",
  "serde",

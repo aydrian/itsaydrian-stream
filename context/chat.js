@@ -48,6 +48,8 @@ export function useChatMessages() {
   const { client } = useContext(ChatContext);
   const [messages, setMessages] = useState([]);
   const profileImages = {
+    default:
+      "https://static-cdn.jtvnw.net/user-default-pictures-uv/cdd517fe-def4-11e9-948e-784f43822e80-profile_image-300x300.png",
     114823831:
       "https://static-cdn.jtvnw.net/jtv_user_pictures/905046a7-e4d4-4e9d-b337-df8531fb8bfe-profile_image-300x300.png"
   };
@@ -57,9 +59,19 @@ export function useChatMessages() {
       return profileImages[userId];
     }
 
-    const { profilePictureUrl } = await fetch(
-      `/.netlify/functions/twitchUser?userId=${userId}`
-    ).then((response) => response.json());
+    let profilePictureUrl = profileImages.default;
+    try {
+      const user = await fetch(`/api/twitchUser?userId=${userId}`).then(
+        (response) => response.json()
+      );
+      profilePictureUrl = user.profilePictureUrl;
+    } catch (err) {
+      console.log(
+        "Error occurred getting user Profile pic, using default.",
+        err
+      );
+    }
+
     profileImages[userId] = profilePictureUrl;
     return profilePictureUrl;
   };
@@ -78,7 +90,7 @@ export function useChatMessages() {
       }
 
       // Grab profile image once per user
-      tags.profileImageUrl = (await getProfileImage(tags["user-id"])) || "";
+      tags.profileImageUrl = await getProfileImage(tags["user-id"]);
 
       // chat activity always includes author and emote data
       const time = new Date(parseInt(tags["tmi-sent-ts"]));

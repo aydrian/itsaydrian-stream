@@ -10,7 +10,7 @@ status = 200
 
 [[redirects]]
 from = "/api/twitchUser"
-to = "/.netlify/functions/twitch_user"
+to = "/.netlify/functions/twitchUser"
 status = 200
 
 [functions]

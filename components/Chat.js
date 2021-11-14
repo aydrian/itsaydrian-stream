@@ -8,7 +8,7 @@ import { useChatMessages } from "@context/chat";
 
 function getUsernameColor(roles) {
   if (roles.includes("BROADCASTER")) {
-    return "var(--yellow)";
+    return "var(--green)";
   }
 
   if (roles.includes("MODERATOR")) {
@@ -60,8 +60,9 @@ function ChatMessage({ message }) {
       <Box flex="1" p="3">
         <Text fontSize="md" className="chat-message">
           <strong style={{ color: getUsernameColor(message.author.roles) }}>
-            {message.author.username}:
-          </strong>{" "}
+            {message.author.username}
+          </strong>
+          <br />
           <span dangerouslySetInnerHTML={{ __html: text }} />
         </Text>
       </Box>

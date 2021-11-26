@@ -14,3 +14,12 @@ status = 200
 
 [functions]
 node_bundler = "esbuild"
+
+[template.environment]
+TWITCH_CLIENT_ID = "Twitch Client ID"
+TWITCH_CLIENT_SECRET = "Twitch Client Secret"
+TWITCH_SIGNING_SECRET = "Twitch Signing Secret"
+PUSHER_APP_ID = "Pusher App ID"
+PUSHER_SECRET = "Pusher Secret"
+NEXT_PUBLIC_PUSHER_CLUSTER = "Pusher Cluster"
+NEXT_PUBLIC_PUSHER_KEY = "Pusher Key"

@@ -2,7 +2,7 @@
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/6edf5f97-5862-4275-bcc3-237c7c8659c0/deploy-status)](https://app.netlify.com/sites/itsaydrian-stream/deploys)
 
-This is a [Next.js](https://nextjs.org/) v10.0.9 project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) and set up to be instantly deployed to [Netlify](https://url.netlify.com/SyTBPVamO)!
+This is a [Next.js](https://nextjs.org/) v12.0.4 project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) and set up to be instantly deployed to [Netlify](https://url.netlify.com/SyTBPVamO)!
 
 This project is a very minimal starter that includes 2 sample components, a global stylesheet, a `netlify.toml` for deployment, and a `jsconfig.json` for setting up absolute imports and aliases. It also includes the [Essential Next.js Build Plugin](https://github.com/netlify/netlify-plugin-nextjs), which will allow for you to implement features like Preview Mode, server-side rendering/incremental static regeneration via Netlify Functions, and internationalized routing.
 
@@ -32,7 +32,7 @@ You can start editing the page by modifying `pages/index.js`. The page auto-upda
 
 **Option two:** Manual clone
 
-1. Clone this repo: `git clone https://github.com/cassidoo/next-netlify-starter.git`
+1. Clone this repo: `git clone https://github.com/aydrian/itsaydrian-stream.git`
 2. Navigate to the directory and run `npm run dev`
 3. Make your changes
 4. Connect to [Netlify](https://url.netlify.com/Bk4UicocL) manually (the `netlify.toml` file is the one you'll need to make sure stays intact to make sure the export is done and pointed to the right stuff)

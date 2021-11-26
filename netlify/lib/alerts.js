@@ -3,7 +3,7 @@ import { twitch } from "./twitch";
 
 export const sendAlert = async (type, event) => {
   // TODO look up user info if subscribe or follow. Send better payload.
-  const viewer = await twitch.helix.users.getUserById(event.user_id);
+  const viewer = await twitch.users.getUserById(event.user_id);
 
   await pusher.trigger("itsaydrian-stream", "alerts", {
     type,
@@ -19,7 +19,7 @@ export const sendAlert = async (type, event) => {
 
 export const sendReward = async (type, event) => {
   // TODO look up user info if subscribe or follow. Send better payload.
-  const viewer = await twitch.helix.users.getUserById(event.user_id);
+  const viewer = await twitch.users.getUserById(event.user_id);
 
   await pusher.trigger("itsaydrian-stream", "redeem-channelpoints", {
     type,

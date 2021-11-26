@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import rehype from "rehype";
+import { rehype } from "rehype";
 import sanitize from "rehype-sanitize";
 import { toast } from "react-toastify";
 import { Box, Flex, Image, Text } from "@chakra-ui/react";

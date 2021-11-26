@@ -3,7 +3,7 @@ import { twitch } from "../lib/twitch";
 export async function handler(event) {
   const { userId } = event.queryStringParameters;
 
-  const user = await twitch.helix.users.getUserById(userId);
+  const user = await twitch.users.getUserById(userId);
 
   return {
     statusCode: 200,

@@ -1,5 +1,5 @@
-import { ApiClient } from "twitch";
-import { ClientCredentialsAuthProvider } from "twitch-auth";
+import { ApiClient } from "@twurple/api";
+import { ClientCredentialsAuthProvider } from "@twurple/auth";
 
 const authProvider = new ClientCredentialsAuthProvider(
   process.env.TWITCH_CLIENT_ID,

@@ -12,6 +12,8 @@
     "@chakra-ui/react": "^1.6.5",
     "@emotion/react": "^11.4.0",
     "@emotion/styled": "^11.3.0",
+    "@twurple/api": "^5.0.9",
+    "@twurple/auth": "^5.0.9",
     "framer-motion": "^4.1.17",
     "matter-js": "^0.17.1",
     "next": "^11.0.0",
@@ -22,9 +24,7 @@
     "react-toastify": "^8.1.0",
     "rehype": "^11.0.0",
     "rehype-sanitize": "^4.0.0",
-    "tmi.js": "^1.8.5",
-    "twitch": "^4.5.3",
-    "twitch-auth": "^4.5.3"
+    "tmi.js": "^1.8.5"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.3",

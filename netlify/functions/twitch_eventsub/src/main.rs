@@ -1,39 +1,59 @@
-use lamedh_http::{
-    http::StatusCode,
-    lambda::{lambda, Context, Error},
-    IntoResponse, Request, Response,
-};
+use aws_lambda_events::encodings::Body;
+use aws_lambda_events::event::apigw::{ApiGatewayProxyRequest, ApiGatewayProxyResponse};
+use hmac::{Hmac, Mac};
+use http::header::{HeaderMap, CONTENT_TYPE};
+use lambda_runtime::{handler_fn, Context, Error};
 use pusher::PusherBuilder;
 use reqwest;
 use serde_json::json;
+use sha2::Sha256;
 use twitch_api2::helix::{ClientRequestError, HelixClient};
 use twitch_api2::{
     eventsub::{self, EventSubscription, Payload},
     types::UserId,
 };
-use twitch_oauth2::{client::reqwest_http_client, AppAccessToken, ClientId, ClientSecret};
+use twitch_oauth2::{AppAccessToken, ClientId, ClientSecret};
 
-#[lambda(http)]
+// Create alias for HMAC-SHA256
+type HmacSha256 = Hmac<Sha256>;
+
 #[tokio::main]
-async fn main(request: Request, _: Context) -> Result<impl IntoResponse, Error> {
-    // Convert to http::Request<Vec<u8>> to make twitch_api2 happy. Thanks @christopherbiscardi
-    let request = request.map(|body| body.as_ref().into());
+async fn main() -> Result<(), Error> {
+    let handler_fn = handler_fn(handler);
+    lambda_runtime::run(handler_fn).await?;
+    Ok(())
+}
+
+async fn handler(
+    event: ApiGatewayProxyRequest,
+    _: Context,
+) -> Result<ApiGatewayProxyResponse, Error> {
     let signing_secret =
         std::env::var("TWITCH_SIGNING_SECRET").expect("TWITCH_SIGNING_SECRET was not set");
 
-    if !Payload::verify_payload(&request, &signing_secret.as_bytes()) {
-        return Ok(Response::builder()
-            .status(StatusCode::UNPROCESSABLE_ENTITY)
-            .body(String::from("Signature verification failed."))
-            .unwrap());
+    if !verify_payload(&event, signing_secret.as_bytes()) {
+        let mut headers = HeaderMap::new();
+        headers.insert(CONTENT_TYPE, "text/plain".parse().unwrap());
+        return Ok(ApiGatewayProxyResponse {
+            status_code: 422,
+            headers,
+            multi_value_headers: HeaderMap::new(),
+            body: Some(Body::Text(String::from("Signature verification failed."))),
+            is_base64_encoded: Some(false),
+        });
     }
 
-    match Payload::parse_http(&request).unwrap() {
+    match Payload::parse(&event.body.unwrap()).unwrap() {
         Payload::VerificationRequest(event) => {
-            return Ok(Response::builder()
-                .status(StatusCode::OK)
-                .body(event.challenge)
-                .unwrap());
+            let mut headers = HeaderMap::new();
+            headers.insert(CONTENT_TYPE, "text/plain".parse().unwrap());
+            return Ok(ApiGatewayProxyResponse {
+                status_code: 200,
+                headers,
+                multi_value_headers: HeaderMap::new(),
+                body: Some(Body::Text(event.challenge)),
+                is_base64_encoded: Some(false),
+            });
         }
         Payload::ChannelFollowV1(event) => send_alert::<eventsub::channel::ChannelFollowV1>(
             "alerts",
@@ -61,10 +81,45 @@ async fn main(request: Request, _: Context) -> Result<impl IntoResponse, Error> 
         _ => {}
     };
 
-    Ok(Response::builder()
-        .status(StatusCode::OK)
-        .body(String::from("OK"))
-        .unwrap())
+    Ok(ApiGatewayProxyResponse {
+        status_code: 200,
+        headers: HeaderMap::new(),
+        multi_value_headers: HeaderMap::new(),
+        body: Some(Body::Text(String::from("OK"))),
+        is_base64_encoded: Some(false),
+    })
+}
+
+fn verify_payload(event: &ApiGatewayProxyRequest, secret: &[u8]) -> bool {
+    let message_id = event
+        .headers
+        .get("twitch-eventsub-message-id")
+        .unwrap()
+        .to_str()
+        .unwrap();
+    let message_timestamp = event
+        .headers
+        .get("twitch-eventsub-message-timestamp")
+        .unwrap()
+        .to_str()
+        .unwrap();
+    let message_signature = event
+        .headers
+        .get("twitch-eventsub-message-signature")
+        .unwrap()
+        .to_str()
+        .unwrap();
+    // dbg!(message_signature);
+    let body = event.body.clone().unwrap();
+    let input = format!("{}{}{}", message_id, message_timestamp, body);
+
+    let mut hmac = HmacSha256::new_from_slice(secret).expect("HMAC can take key of any size");
+    hmac.update(input.as_bytes());
+    let result = hmac.finalize();
+    let expected_signature = format!("sha256={}", hex::encode(result.into_bytes()));
+    // dbg!(&expected_signature);
+
+    message_signature == &expected_signature[..]
 }
 
 async fn send_alert<T: EventSubscription>(
@@ -123,10 +178,14 @@ async fn get_user_from_id(
         .map(|val| ClientSecret::new(val))
         .expect("TWITCH_CLIENT_SECRET was not set");
 
-    let token =
-        AppAccessToken::get_app_access_token(reqwest_http_client, client_id, client_secret, vec![])
-            .await
-            .unwrap();
+    let token = AppAccessToken::get_app_access_token(
+        &reqwest::Client::new(),
+        client_id,
+        client_secret,
+        vec![],
+    )
+    .await
+    .unwrap();
 
     let helix: HelixClient<'static, reqwest::Client> = HelixClient::default();
 

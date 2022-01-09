@@ -1,16 +1,21 @@
 use aws_lambda_events::encodings::Body;
 use aws_lambda_events::event::apigw::{ApiGatewayProxyRequest, ApiGatewayProxyResponse};
-use http::header::HeaderMap;
+use hmac::{Hmac, Mac};
+use http::header::{HeaderMap, CONTENT_TYPE};
 use lambda_runtime::{handler_fn, Context, Error};
 use pusher::PusherBuilder;
 use reqwest;
 use serde_json::json;
+use sha2::Sha256;
 use twitch_api2::helix::{ClientRequestError, HelixClient};
 use twitch_api2::{
     eventsub::{self, EventSubscription, Payload},
     types::UserId,
 };
 use twitch_oauth2::{AppAccessToken, ClientId, ClientSecret};
+
+// Create alias for HMAC-SHA256
+type HmacSha256 = Hmac<Sha256>;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -23,29 +28,28 @@ async fn handler(
     event: ApiGatewayProxyRequest,
     _: Context,
 ) -> Result<ApiGatewayProxyResponse, Error> {
-    // Convert to http::Request<Vec<u8>> to make twitch_api2 happy. Thanks @christopherbiscardi
-    // let request: http::Request<Vec<u8>> = event.map(|body| body.as_ref().into());
-
-    /*let signing_secret =
+    let signing_secret =
         std::env::var("TWITCH_SIGNING_SECRET").expect("TWITCH_SIGNING_SECRET was not set");
 
-    if !Payload::verify_payload(&request, &signing_secret.as_bytes()) {
+    if !verify_payload(&event, signing_secret.as_bytes()) {
+        let mut headers = HeaderMap::new();
+        headers.insert(CONTENT_TYPE, "text/plain".parse().unwrap());
         return Ok(ApiGatewayProxyResponse {
             status_code: 422,
-            headers: HeaderMap::new(),
+            headers,
             multi_value_headers: HeaderMap::new(),
             body: Some(Body::Text(String::from("Signature verification failed."))),
             is_base64_encoded: Some(false),
         });
-    }*/
-    let payload = Payload::parse(&event.body.unwrap()).unwrap();
+    }
 
-    // match Payload::parse_http(&request).unwrap() {
-    match payload {
+    match Payload::parse(&event.body.unwrap()).unwrap() {
         Payload::VerificationRequest(event) => {
+            let mut headers = HeaderMap::new();
+            headers.insert(CONTENT_TYPE, "text/plain".parse().unwrap());
             return Ok(ApiGatewayProxyResponse {
                 status_code: 200,
-                headers: HeaderMap::new(),
+                headers,
                 multi_value_headers: HeaderMap::new(),
                 body: Some(Body::Text(event.challenge)),
                 is_base64_encoded: Some(false),
@@ -84,6 +88,38 @@ async fn handler(
         body: Some(Body::Text(String::from("OK"))),
         is_base64_encoded: Some(false),
     })
+}
+
+fn verify_payload(event: &ApiGatewayProxyRequest, secret: &[u8]) -> bool {
+    let message_id = event
+        .headers
+        .get("twitch-eventsub-message-id")
+        .unwrap()
+        .to_str()
+        .unwrap();
+    let message_timestamp = event
+        .headers
+        .get("twitch-eventsub-message-timestamp")
+        .unwrap()
+        .to_str()
+        .unwrap();
+    let message_signature = event
+        .headers
+        .get("twitch-eventsub-message-signature")
+        .unwrap()
+        .to_str()
+        .unwrap();
+    // dbg!(message_signature);
+    let body = event.body.clone().unwrap();
+    let input = format!("{}{}{}", message_id, message_timestamp, body);
+
+    let mut hmac = HmacSha256::new_from_slice(secret).expect("HMAC can take key of any size");
+    hmac.update(input.as_bytes());
+    let result = hmac.finalize();
+    let expected_signature = format!("sha256={}", hex::encode(result.into_bytes()));
+    // dbg!(&expected_signature);
+
+    message_signature == &expected_signature[..]
 }
 
 async fn send_alert<T: EventSubscription>(

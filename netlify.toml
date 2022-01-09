@@ -1,5 +1,4 @@
 [build]
-# command = "make build && npm run build"
 command = "npm run build"
 publish = "out"
 
@@ -10,7 +9,7 @@ status = 200
 
 [[redirects]]
 from = "/api/twitchUser"
-to = "/.netlify/functions/twitchUser"
+to = "/.netlify/functions/twitch_user"
 status = 200
 
 [functions]

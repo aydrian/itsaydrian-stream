@@ -8,6 +8,8 @@ const getMessage = (event) => {
     return `${event.viewer.displayName} just followed!`;
   } else if (event.type === "channel.subscribe") {
     return `${event.viewer.displayName} just subscribed!`;
+  } else if (event.type === "channel.raid") {
+    return `${event.viewer.displayName} is raiding with ${event.viewer.viewers} viewers! 🎉`;
   }
 };
 

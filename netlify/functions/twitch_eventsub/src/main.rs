@@ -78,6 +78,14 @@ async fn handler(
             .await
             .unwrap()
         }
+        Payload::ChannelRaidV1(event) => send_alert::<eventsub::channel::ChannelRaidV1>(
+            "alerts",
+            &event.event.from_broadcaster_user_id,
+            &event.event,
+        )
+        .await
+        .unwrap(),
+
         _ => {}
     };
 

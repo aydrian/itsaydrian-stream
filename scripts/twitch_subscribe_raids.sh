@@ -4,7 +4,7 @@ twitch api post eventsub/subscriptions -b '{
   "type": "channel.raid",
   "version": "1",
   "condition": {
-      "broadcaster_user_id": "114823831"
+      "to_broadcaster_user_id": "114823831"
   },
   "transport": {
       "method": "webhook",

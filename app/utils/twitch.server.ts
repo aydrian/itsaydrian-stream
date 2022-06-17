@@ -29,7 +29,8 @@ export const withVerifyTwitch = (actionFunction: ActionFunction) => {
       return new Response("Ignore this request.", { status: 422 });
     }
 
-    const body = await request.text();
+    const body = await request.clone().text();
+    //const body = await request.text();
     const computedSignature =
       "sha256=" +
       crypto

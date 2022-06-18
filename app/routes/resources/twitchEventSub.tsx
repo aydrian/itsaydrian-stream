@@ -1,6 +1,7 @@
 import type { ActionFunction } from "@remix-run/node";
 import { json, Response } from "@remix-run/node";
 import { withVerifyTwitch } from "~/utils/twitch.server";
+import { sendAlert, sendReward } from "~/utils/alerts.server";
 
 export const action: ActionFunction = withVerifyTwitch(async ({ request }) => {
   if (request.method !== "POST") {
@@ -34,11 +35,11 @@ export const action: ActionFunction = withVerifyTwitch(async ({ request }) => {
         type === "channel.raid" ||
         type === "channel.subscribe"
       ) {
-        // await sendAlert(type, event);
+        await sendAlert(type, event);
       } else if (
         type === "channel.channel_points_custom_reward_redemption.add"
       ) {
-        // await sendReward(type, event);
+        await sendReward(type, event);
       }
     } catch (ex) {
       console.log(

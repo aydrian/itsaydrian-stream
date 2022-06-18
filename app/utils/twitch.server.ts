@@ -2,6 +2,9 @@ import type { ActionFunction } from "@remix-run/node";
 import { Response } from "@remix-run/node";
 import crypto from "crypto";
 import invariant from "tiny-invariant";
+import { ApiClient } from "@twurple/api";
+import { ClientCredentialsAuthProvider } from "@twurple/auth";
+
 const twitchSigningSecret = process.env.TWITCH_SIGNING_SECRET;
 
 export const withVerifyTwitch = (actionFunction: ActionFunction) => {
@@ -30,7 +33,6 @@ export const withVerifyTwitch = (actionFunction: ActionFunction) => {
     }
 
     const body = await request.clone().text();
-    //const body = await request.text();
     const computedSignature =
       "sha256=" +
       crypto
@@ -52,3 +54,14 @@ export const withVerifyTwitch = (actionFunction: ActionFunction) => {
 
   return action;
 };
+
+const authProvider = new ClientCredentialsAuthProvider(
+  process.env.TWITCH_CLIENT_ID!,
+  process.env.TWITCH_CLIENT_SECRET!
+);
+
+export const twitch = new ApiClient({ authProvider });
+
+export interface EventSubEvent {
+  user_id: string;
+}

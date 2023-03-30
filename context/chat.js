@@ -49,9 +49,7 @@ export function useChatMessages() {
   const [messages, setMessages] = useState([]);
   const profileImages = {
     default:
-      "https://static-cdn.jtvnw.net/user-default-pictures-uv/cdd517fe-def4-11e9-948e-784f43822e80-profile_image-300x300.png",
-    114823831:
-      "https://static-cdn.jtvnw.net/jtv_user_pictures/905046a7-e4d4-4e9d-b337-df8531fb8bfe-profile_image-300x300.png"
+      "https://static-cdn.jtvnw.net/user-default-pictures-uv/cdd517fe-def4-11e9-948e-784f43822e80-profile_image-300x300.png"
   };
 
   const getProfileImage = async (userId) => {

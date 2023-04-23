@@ -6,7 +6,7 @@ export default function ChatPage() {
   return (
     <ChatProvider channels={["itsaydrian"]}>
       <Chat />
-      <ToastContainer closeButton={false} position="bottom-left" />
+      <ToastContainer closeButton={false} position="bottom-right" />
     </ChatProvider>
   );
 }

@@ -52,7 +52,10 @@ export default function Overlays() {
   }, []);
   return (
     <ChatProvider channels={["itsaydrian"]}>
-      <EmoteDrop filter={["CorgiDerp", "DoritosChip", "twitchRaid"]} />
+      <EmoteDrop
+        filter={["CorgiDerp", "DoritosChip", "twitchRaid"]}
+        canvas={{ height: 1080, width: 1920 }}
+      />
       {reward.event && <AtticusBoop event={reward.event} />}
     </ChatProvider>
   );
